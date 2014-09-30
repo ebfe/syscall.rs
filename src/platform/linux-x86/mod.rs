@@ -8,13 +8,42 @@
 // except accoebxng to those terms.
 
 //! This library was built for x86 Linux.
-
 pub mod nr;
 
+#[no_mangle]
+pub static mut vsyscall : u32 = 0;
+
+pub unsafe fn setup_vsyscall(auxv: *const u8) {
+    let mut ptr = auxv;
+
+    #[repr(C)]
+    struct Auxv {
+        typ: u32,
+        val: u32,
+    }
+
+    loop {
+        let aux = *(ptr as *const Auxv);
+        match aux.typ {
+            0  =>
+                // AT_NULL
+                return,
+            32 => { 
+                // AT_SYSINFO
+                vsyscall = aux.val;
+                return
+            }
+            _ => (),
+        }
+        ptr = ptr.offset(8);
+    }
+}
+
 #[inline(always)]
-pub unsafe fn syscall0(n: usize) -> usize {
-    let mut ret : usize;
-    asm!("int $$0x80" : "={eax}"(ret)
+pub unsafe fn syscall0(n: uint) -> uint {
+    let mut ret : uint;
+    asm!("call *vsyscall"
+                      : "={eax}"(ret)
                       : "{eax}"(n)
                       : "memory" "cc"
                       : "volatile");
@@ -22,9 +51,10 @@ pub unsafe fn syscall0(n: usize) -> usize {
 }
 
 #[inline(always)]
-pub unsafe fn syscall1(n: usize, a1: usize) -> usize {
-    let mut ret : usize;
-    asm!("int $$0x80" : "={eax}"(ret)
+pub unsafe fn syscall1(n: uint, a1: uint) -> uint {
+    let mut ret : uint;
+    asm!("call *vsyscall"
+                      : "={eax}"(ret)
                       : "{eax}"(n), "{ebx}"(a1)
                       : "memory" "cc"
                       : "volatile");
@@ -32,9 +62,10 @@ pub unsafe fn syscall1(n: usize, a1: usize) -> usize {
 }
 
 #[inline(always)]
-pub unsafe fn syscall2(n: usize, a1: usize, a2: usize) -> usize {
-    let mut ret : usize;
-    asm!("int $$0x80" : "={eax}"(ret)
+pub unsafe fn syscall2(n: uint, a1: uint, a2: uint) -> uint {
+    let mut ret : uint;
+    asm!("call *vsyscall"
+                      : "={eax}"(ret)
                       : "{eax}"(n), "{ebx}"(a1), "{ecx}"(a2)
                       : "memory" "cc"
                       : "volatile");
@@ -42,9 +73,10 @@ pub unsafe fn syscall2(n: usize, a1: usize, a2: usize) -> usize {
 }
 
 #[inline(always)]
-pub unsafe fn syscall3(n: usize, a1: usize, a2: usize, a3: usize) -> usize {
-    let mut ret : usize;
-    asm!("int $$0x80" : "={eax}"(ret)
+pub unsafe fn syscall3(n: uint, a1: uint, a2: uint, a3: uint) -> uint {
+    let mut ret : uint;
+    asm!("call *vsyscall"
+                      : "={eax}"(ret)
                       : "{eax}"(n), "{ebx}"(a1), "{ecx}"(a2), "{edx}"(a3)
                       : "memory" "cc"
                       : "volatile");
@@ -52,10 +84,11 @@ pub unsafe fn syscall3(n: usize, a1: usize, a2: usize, a3: usize) -> usize {
 }
 
 #[inline(always)]
-pub unsafe fn syscall4(n: usize, a1: usize, a2: usize, a3: usize,
-                                a4: usize) -> usize {
-    let mut ret : usize;
-    asm!("int $$0x80" : "={eax}"(ret)
+pub unsafe fn syscall4(n: uint, a1: uint, a2: uint, a3: uint,
+                                a4: uint) -> uint {
+    let mut ret : uint;
+    asm!("call *vsyscall" 
+                      : "={eax}"(ret)
                       : "{eax}"(n), "{ebx}"(a1), "{ecx}"(a2), "{edx}"(a3),
                         "{esi}"(a4)
                       : "memory" "cc"
@@ -64,10 +97,11 @@ pub unsafe fn syscall4(n: usize, a1: usize, a2: usize, a3: usize,
 }
 
 #[inline(always)]
-pub unsafe fn syscall5(n: usize, a1: usize, a2: usize, a3: usize,
-                                a4: usize, a5: usize) -> usize {
-    let mut ret : usize;
-    asm!("int $$0x80" : "={eax}"(ret)
+pub unsafe fn syscall5(n: uint, a1: uint, a2: uint, a3: uint,
+                                a4: uint, a5: uint) -> uint {
+    let mut ret : uint;
+    asm!("call *vsyscall"
+                      : "={eax}"(ret)
                       : "{eax}"(n), "{ebx}"(a1), "{ecx}"(a2), "{edx}"(a3),
                         "{esi}"(a4), "{edi}"(a5)
                       : "memory" "cc"
@@ -118,7 +152,7 @@ pub unsafe fn syscall6(n: usize, a1: usize, a2: usize, a3: usize,
           movl  8(%eax), %ecx
           movl  4(%eax), %ebx
           movl  0(%eax), %eax
-          int $$0x80
+          call *vsyscall
           pop %ebp"
             : "={eax}"(ret)
             : "{eax}"(args)
