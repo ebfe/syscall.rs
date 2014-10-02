@@ -13,7 +13,7 @@ pub mod nr;
 #[no_mangle]
 pub static mut vsyscall : u32 = 0;
 
-pub unsafe fn setup_vsyscall(auxv: *const u8) {
+pub unsafe fn setup_vsyscall(auxv: *const u8) -> bool {
     let mut ptr = auxv;
 
     #[repr(C)]
@@ -27,11 +27,11 @@ pub unsafe fn setup_vsyscall(auxv: *const u8) {
         match aux.typ {
             0  =>
                 // AT_NULL
-                return,
+                return false,
             32 => { 
                 // AT_SYSINFO
                 vsyscall = aux.val;
-                return
+                return true
             }
             _ => (),
         }
