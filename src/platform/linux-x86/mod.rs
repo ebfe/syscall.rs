@@ -35,7 +35,7 @@ pub unsafe fn setup_vsyscall(auxv: *const u8) {
             }
             _ => (),
         }
-        ptr = ptr.offset(8);
+        ptr = (ptr as uint + 8) as *const u8;
     }
 }
 
