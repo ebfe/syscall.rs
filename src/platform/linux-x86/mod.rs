@@ -11,7 +11,7 @@
 pub mod nr;
 
 #[no_mangle]
-pub static mut vsyscall : u32 = 0;
+pub static mut __syscallrs_vsyscall : u32 = 0;
 
 pub unsafe fn setup_vsyscall(auxv: *const u8) -> bool {
     let mut ptr = auxv;
@@ -30,7 +30,7 @@ pub unsafe fn setup_vsyscall(auxv: *const u8) -> bool {
                 return false,
             32 => { 
                 // AT_SYSINFO
-                vsyscall = aux.val;
+                __syscallrs_vsyscall = aux.val;
                 return true
             }
             _ => (),
@@ -42,9 +42,9 @@ pub unsafe fn setup_vsyscall(auxv: *const u8) -> bool {
 #[inline(always)]
 pub unsafe fn syscall0(n: uint) -> uint {
     let mut ret : uint;
-    asm!("    cmpl $$0, vsyscall
+    asm!("    cmpl $$0, __syscallrs_vsyscall
               jz 1f
-              call *vsyscall
+              call *__syscallrs_vsyscall
               jmp 2f
           1:  int $$0x80
           2:"
@@ -58,9 +58,9 @@ pub unsafe fn syscall0(n: uint) -> uint {
 #[inline(always)]
 pub unsafe fn syscall1(n: uint, a1: uint) -> uint {
     let mut ret : uint;
-    asm!("    cmpl $$0, vsyscall
+    asm!("    cmpl $$0, __syscallrs_vsyscall
               jz 1f
-              call *vsyscall
+              call *__syscallrs_vsyscall
               jmp 2f
           1:  int $$0x80
           2:"
@@ -74,9 +74,9 @@ pub unsafe fn syscall1(n: uint, a1: uint) -> uint {
 #[inline(always)]
 pub unsafe fn syscall2(n: uint, a1: uint, a2: uint) -> uint {
     let mut ret : uint;
-    asm!("    cmpl $$0, vsyscall
+    asm!("    cmpl $$0, __syscallrs_vsyscall
               jz 1f
-              call *vsyscall
+              call *__syscallrs_vsyscall
               jmp 2f
           1:  int $$0x80
           2:"
@@ -91,9 +91,9 @@ pub unsafe fn syscall2(n: uint, a1: uint, a2: uint) -> uint {
 pub unsafe fn syscall3(n: uint, a1: uint, a2: uint, a3: uint) -> uint {
     let mut ret : uint;
 
-    asm!("    cmpl $$0, vsyscall
+    asm!("    cmpl $$0, __syscallrs_vsyscall
               jz 1f
-              call *vsyscall
+              call *__syscallrs_vsyscall
               jmp 2f
           1:  int $$0x80
           2:"
@@ -108,9 +108,9 @@ pub unsafe fn syscall3(n: uint, a1: uint, a2: uint, a3: uint) -> uint {
 pub unsafe fn syscall4(n: uint, a1: uint, a2: uint, a3: uint,
                                 a4: uint) -> uint {
     let mut ret : uint;
-    asm!("    cmpl $$0, vsyscall
+    asm!("    cmpl $$0, __syscallrs_vsyscall
               jz 1f
-              call *vsyscall
+              call *__syscallrs_vsyscall
               jmp 2f
           1:  int $$0x80
           2:"
@@ -126,9 +126,9 @@ pub unsafe fn syscall4(n: uint, a1: uint, a2: uint, a3: uint,
 pub unsafe fn syscall5(n: uint, a1: uint, a2: uint, a3: uint,
                                 a4: uint, a5: uint) -> uint {
     let mut ret : uint;
-    asm!("    cmpl $$0, vsyscall
+    asm!("    cmpl $$0, __syscallrs_vsyscall
               jz 1f
-              call *vsyscall
+              call *__syscallrs_vsyscall
               jmp 2f
           1:  int $$0x80
           2:"
@@ -183,9 +183,9 @@ pub unsafe fn syscall6(n: usize, a1: usize, a2: usize, a3: usize,
               movl  8(%eax), %ecx
               movl  4(%eax), %ebx
               movl  0(%eax), %eax
-              cmpl $$0, vsyscall
+              cmpl $$0, __syscallrs_vsyscall
               jz 1f
-              call *vsyscall
+              call *__syscallrs_vsyscall
               jmp 2f
           1:  int $$0x80
           2:  pop %ebp"
