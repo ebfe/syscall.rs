@@ -40,8 +40,8 @@ pub unsafe fn setup_vsyscall(auxv: *const u8) -> bool {
 }
 
 #[inline(always)]
-pub unsafe fn syscall0(n: uint) -> uint {
-    let mut ret : uint;
+pub unsafe fn syscall0(n: usize) -> usize {
+    let mut ret : usize;
     asm!("    cmpl $$0, __syscallrs_vsyscall
               jz 1f
               call *__syscallrs_vsyscall
@@ -56,8 +56,8 @@ pub unsafe fn syscall0(n: uint) -> uint {
 }
 
 #[inline(always)]
-pub unsafe fn syscall1(n: uint, a1: uint) -> uint {
-    let mut ret : uint;
+pub unsafe fn syscall1(n: usize, a1: usize) -> usize {
+    let mut ret : usize;
     asm!("    cmpl $$0, __syscallrs_vsyscall
               jz 1f
               call *__syscallrs_vsyscall
@@ -72,8 +72,8 @@ pub unsafe fn syscall1(n: uint, a1: uint) -> uint {
 }
 
 #[inline(always)]
-pub unsafe fn syscall2(n: uint, a1: uint, a2: uint) -> uint {
-    let mut ret : uint;
+pub unsafe fn syscall2(n: usize, a1: usize, a2: usize) -> usize {
+    let mut ret : usize;
     asm!("    cmpl $$0, __syscallrs_vsyscall
               jz 1f
               call *__syscallrs_vsyscall
@@ -88,8 +88,8 @@ pub unsafe fn syscall2(n: uint, a1: uint, a2: uint) -> uint {
 }
 
 #[inline(always)]
-pub unsafe fn syscall3(n: uint, a1: uint, a2: uint, a3: uint) -> uint {
-    let mut ret : uint;
+pub unsafe fn syscall3(n: usize, a1: usize, a2: usize, a3: usize) -> usize {
+    let mut ret : usize;
 
     asm!("    cmpl $$0, __syscallrs_vsyscall
               jz 1f
@@ -105,9 +105,9 @@ pub unsafe fn syscall3(n: uint, a1: uint, a2: uint, a3: uint) -> uint {
 }
 
 #[inline(always)]
-pub unsafe fn syscall4(n: uint, a1: uint, a2: uint, a3: uint,
-                                a4: uint) -> uint {
-    let mut ret : uint;
+pub unsafe fn syscall4(n: usize, a1: usize, a2: usize, a3: usize,
+                                a4: usize) -> usize {
+    let mut ret : usize;
     asm!("    cmpl $$0, __syscallrs_vsyscall
               jz 1f
               call *__syscallrs_vsyscall
@@ -123,9 +123,9 @@ pub unsafe fn syscall4(n: uint, a1: uint, a2: uint, a3: uint,
 }
 
 #[inline(always)]
-pub unsafe fn syscall5(n: uint, a1: uint, a2: uint, a3: uint,
-                                a4: uint, a5: uint) -> uint {
-    let mut ret : uint;
+pub unsafe fn syscall5(n: usize, a1: usize, a2: usize, a3: usize,
+                                a4: usize, a5: usize) -> usize {
+    let mut ret : usize;
     asm!("    cmpl $$0, __syscallrs_vsyscall
               jz 1f
               call *__syscallrs_vsyscall
