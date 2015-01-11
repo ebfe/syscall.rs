@@ -1,35 +1,27 @@
-#![feature(phase)]
-
-extern crate native;
-
-#[phase(plugin, link)]
+#[macro_use]
 extern crate syscall;
 
-unsafe fn find_auxv(argc: int, argv: *const *const u8) -> *const u8 {
-    let mut ptr = argv.offset(argc + 1); 
-
-    // skip env variables
-    while *ptr != std::ptr::null() {
-        ptr = ptr.offset(1)
+fn write(fd: usize, buf: &[u8]) -> isize {
+    unsafe {
+        syscall!(WRITE, fd, buf.as_ptr(), buf.len()) as isize
     }
+}
 
-    ptr.offset(1) as *const u8
+fn exit(code: usize) {
+    unsafe {
+        syscall!(EXIT, code);
+    }
 }
 
 #[start]
-fn start(argc: int, argv: *const *const u8) -> int {
+fn start(argc: isize, argv: *const *const u8) -> isize {
     unsafe {
-        syscall::platform::setup_vsyscall(find_auxv(argc, argv));
+        syscall::platform::setup_vsyscall(argc, argv);
     }
-    native::start(argc, argv, main)
-}
 
-fn write(fd: uint, buf: &[u8]) {
-    unsafe {
-        syscall!(WRITE, fd, buf.as_ptr(), buf.len());
+    if write(1, "Hello, vsyscall!\n".as_bytes()) < 0 {
+        exit(1);
     }
-}
-
-fn main() {
-    write(1, "Hello, vsyscall!\n".as_bytes());
+    exit(0);
+    0
 }
