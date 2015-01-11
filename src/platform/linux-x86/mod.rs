@@ -13,29 +13,36 @@ pub mod nr;
 #[no_mangle]
 pub static mut __syscallrs_vsyscall : u32 = 0;
 
-pub unsafe fn setup_vsyscall(auxv: *const u8) -> bool {
-    let mut ptr = auxv;
+unsafe fn find_auxv(argc: isize, argv: *const *const u8) -> *const u64 {
+    let mut ptr = (argv as u32 + ((argc as u32 + 1) * 4)) as *const u32;
 
-    #[repr(C)]
-    struct Auxv {
-        typ: u32,
-        val: u32,
+    while *ptr != 0 {
+        ptr = (ptr as u32 + 4) as *const u32
     }
 
+    (ptr as u32 + 4) as *const u64
+}
+
+pub unsafe fn setup_vsyscall(argc: isize, argv: *const *const u8) -> bool {
+    let mut ptr = find_auxv(argc, argv);
+
     loop {
-        let aux = *(ptr as *const Auxv);
-        match aux.typ {
+        let aux : u64 = *ptr;
+        let typ : u32 = aux as u32;
+        let val : u32 = (aux >> 32) as u32;
+
+        match typ {
             0  =>
                 // AT_NULL
                 return false,
             32 => { 
                 // AT_SYSINFO
-                __syscallrs_vsyscall = aux.val;
+                __syscallrs_vsyscall = val;
                 return true
             }
             _ => (),
         }
-        ptr = (ptr as uint + 8) as *const u8;
+        ptr = (ptr as usize + 8) as *const u64;
     }
 }
 
